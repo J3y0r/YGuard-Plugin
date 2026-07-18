@@ -1,0 +1,20 @@
+name: YGuard-AntiCheat
+description: $description
+prefix: YGuard
+version: '${version}'
+
+main: me.jeyor.yguard.core.Core
+api-version: '1.21.11'
+load: STARTUP
+
+authors: [Jeyor]
+website: https://github.com/J3y0r
+permissions:
+  yguard.admin:
+    description: Allows YGuard administration commands and alerts
+    default: op
+commands:
+  yguard:
+    description: YGuard administration
+    permission: yguard.admin
+    usage: /yguard unban <account|hwid> <value>

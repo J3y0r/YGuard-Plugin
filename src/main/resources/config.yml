@@ -1,0 +1,27 @@
+storage:
+  type: sqlite
+  sqlite:
+    file: yguard.db
+  mysql:
+    host: localhost
+    port: 3306
+    database: yguard
+    username: yguard
+    password: change-me
+keys:
+  activeKeyId: 2026-01
+  privateKeys:
+    2026-01: keys/2026-01-private.pem
+allowedBuildIds: []
+suspiciousPackages:
+  exact: []
+  prefixes: []
+actions:
+  HWID_BANNED: BAN_HWID_ACCOUNT
+  BUILD_ID_INVALID: KICK
+  SUSPICIOUS_PACKAGE: KICK
+  NATIVE_UNAVAILABLE: KICK
+  HWID_UNAVAILABLE: KICK
+  PACKAGES_UNAVAILABLE: KICK
+  HOOK_UNAVAILABLE: WARN
+  VERIFICATION_FAILED: KICK

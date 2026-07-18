@@ -1,0 +1,21 @@
+# MacOS DS_Store files
+.DS_Store
+
+# Gradle cache folder
+.gradle
+.kotlin
+
+# Gradle build folder
+build
+
+# IntelliJ
+out/
+.idea
+*.iml
+.idea_modules/
+
+# Virtual machine crash logs
+hs_err_pid*
+
+# Common working directory
+run
