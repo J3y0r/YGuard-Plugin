@@ -6,6 +6,7 @@ version: '${version}'
 main: me.jeyor.yguard.core.Core
 api-version: '1.21.11'
 load: STARTUP
+softdepend: [floodgate]
 
 authors: [Jeyor]
 website: https://github.com/J3y0r

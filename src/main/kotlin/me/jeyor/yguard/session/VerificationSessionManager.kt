@@ -31,6 +31,7 @@ class VerificationSessionManager(
     private val activeKeyId: String,
     private val envelopeHandler: (Player, ChallengeBinding, ByteArray) -> Unit,
     private val expirationHandler: (OnlineVerificationContext) -> Unit,
+    private val shouldSkipVerification: (UUID) -> Boolean = { false },
     private val clock: () -> Long = System::currentTimeMillis,
     private val random: SecureRandom = SecureRandom(),
 ) : Listener, PluginMessageListener, AutoCloseable {
@@ -78,6 +79,9 @@ class VerificationSessionManager(
     fun start(player: Player) {
         check(Bukkit.isPrimaryThread())
         remove(player.uniqueId)
+        if (shouldSkipVerification(player.uniqueId)) {
+            return
+        }
         val session = Session(player, UUID.randomUUID())
         sessions[player.uniqueId] = session
         activate(session, 1)

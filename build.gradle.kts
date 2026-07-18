@@ -7,10 +7,14 @@ plugins {
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://repo.opencollab.dev/maven-snapshots/")
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    compileOnly("org.geysermc.floodgate:api:2.2.4-SNAPSHOT") {
+        isTransitive = false
+    }
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("com.google.code.gson:gson:2.13.2")
     implementation("com.zaxxer:HikariCP:7.1.0") {

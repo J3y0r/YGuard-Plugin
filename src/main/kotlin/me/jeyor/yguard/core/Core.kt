@@ -1,6 +1,7 @@
 package me.jeyor.yguard.core
 
 import me.jeyor.yguard.command.YGuardCommand
+import me.jeyor.yguard.compatibility.FloodgateCompatibility
 import me.jeyor.yguard.config.YGuardConfigLoader
 import me.jeyor.yguard.crypto.AttestationDecryptor
 import me.jeyor.yguard.crypto.PrivateKeyRegistry
@@ -12,6 +13,7 @@ import me.jeyor.yguard.session.VerificationSessionManager
 import me.jeyor.yguard.storage.DatabaseFactory
 import me.jeyor.yguard.storage.DatabaseHandle
 import me.jeyor.yguard.storage.YGuardRepository
+import org.geysermc.floodgate.api.FloodgateApi
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
@@ -45,12 +47,17 @@ class Core : JavaPlugin() {
             databaseExecutor = dbExecutor
             cryptoExecutor = decryptExecutor
             val detectionService = DetectionService(yguardConfig, repository)
+            val floodgateCompatibility = FloodgateCompatibility(
+                isFloodgateEnabled = { server.pluginManager.isPluginEnabled("floodgate") },
+                isFloodgatePlayer = { playerUuid -> FloodgateApi.getInstance().isFloodgatePlayer(playerUuid) },
+            )
             lateinit var coordinator: AttestationCoordinator
             val sessionManager = VerificationSessionManager(
                 plugin = this,
                 activeKeyId = keyRegistry.activeKeyId,
                 envelopeHandler = { player, binding, envelope -> coordinator.processEnvelope(player, binding, envelope) },
                 expirationHandler = { context -> coordinator.expire(context) },
+                shouldSkipVerification = floodgateCompatibility::isBedrockPlayer,
             )
             coordinator = AttestationCoordinator(
                 plugin = this,
