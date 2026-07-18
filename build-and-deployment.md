@@ -48,7 +48,9 @@ Pop-Location
 ```powershell
 Push-Location YGuard-ClientSide-Mod\YGuard-NativeLibs
 $env:JAVA_HOME = 'C:\Program Files\Zulu\zulu-21'
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DYGUARD_JAVA_HOME="$env:JAVA_HOME"
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release `
+  "-DCMAKE_CXX_COMPILER=D:\Program Files\ollvm\bin\clang-cl.exe" `
+  "-DYGUARD_JAVA_HOME=$env:JAVA_HOME"
 cmake --build build --config Release
 ctest --test-dir build --output-on-failure -C Release
 Pop-Location
@@ -73,10 +75,7 @@ release\keys\public\
 ```powershell
 Push-Location YGuard-ClientSide-Mod
 $buildId = [guid]::NewGuid().ToString()
-.\gradlew.bat clean releaseJar --no-build-cache `
-  "-PyguardNativeDll=YGuard-NativeLibs\build\yguard_native.dll" `
-  "-PyguardPublicKeysDir=..\release\keys\public" `
-  "-PyguardBuildId=$buildId"
+.\gradlew.bat clean releaseJar --no-build-cache "-PyguardNativeDll=YGuard-NativeLibs\build\yguard_native.dll" "-PyguardPublicKeysDir=..\release\keys\public" "-PyguardBuildId=$buildId"
 Pop-Location
 ```
 
