@@ -71,6 +71,7 @@ class YGuardCommand(
                 } else if (count == 0) {
                     sender.sendMessage(Component.text("No active ban matched"))
                 } else {
+                    plugin.logger.info("$actor removed $count active YGuard ${subjectType.name} ban record(s)")
                     sender.sendMessage(Component.text("Removed $count active ban record(s)"))
                 }
             })

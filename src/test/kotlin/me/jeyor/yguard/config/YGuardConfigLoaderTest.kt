@@ -4,6 +4,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
@@ -18,6 +19,37 @@ class YGuardConfigLoaderTest {
         assertEquals(StorageType.SQLITE, loaded.storage.type)
         assertEquals("test-key", loaded.keys.activeKeyId)
         assertEquals(8, loaded.actions.size)
+        assertEquals(
+            "Kick Player BUILD_ID_INVALID KICK",
+            loaded.messages.renderKick(
+                "Player",
+                UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                "BUILD_ID_INVALID",
+                "KICK",
+            ),
+        )
+    }
+
+    @Test
+    fun `uses default message templates when messages are omitted`() {
+        val yaml = validYaml().replace(
+            """
+            messages:
+              kick: "Kick {player} {detections} {action}"
+              ban: "Ban {player}"
+              serviceUnavailable: "Unavailable {uuid}"
+            """.trimIndent() + "\n",
+            "",
+        )
+
+        val loaded = YGuardConfigLoader.load(configuration(yaml), temporaryDirectory)
+
+        assertEquals("YGuard verification failed: BUILD_ID_INVALID", loaded.messages.renderKick(
+            "Player",
+            UUID.fromString("11111111-1111-1111-1111-111111111111"),
+            "BUILD_ID_INVALID",
+            "KICK",
+        ))
     }
 
     @Test
@@ -54,6 +86,10 @@ class YGuardConfigLoaderTest {
         suspiciousPackages:
           exact: []
           prefixes: []
+        messages:
+          kick: "Kick {player} {detections} {action}"
+          ban: "Ban {player}"
+          serviceUnavailable: "Unavailable {uuid}"
         actions:
           HWID_BANNED: BAN_HWID_ACCOUNT
           BUILD_ID_INVALID: KICK

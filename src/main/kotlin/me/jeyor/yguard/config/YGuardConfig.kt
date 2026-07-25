@@ -6,6 +6,7 @@ import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.FileConfiguration
 import java.nio.file.Path
 import java.util.Locale
+import java.util.UUID
 
 enum class StorageType {
     SQLITE,
@@ -38,12 +39,43 @@ data class PackageRules(
     val prefixes: Set<String>,
 )
 
+data class MessageTemplates(
+    val kick: String,
+    val ban: String,
+    val serviceUnavailable: String,
+) {
+    fun renderKick(player: String, uuid: UUID, detections: String, action: String): String =
+        render(kick, player, uuid, detections, action)
+
+    fun renderBan(player: String, uuid: UUID, detections: String, action: String): String =
+        render(ban, player, uuid, detections, action)
+
+    fun renderServiceUnavailable(player: String, uuid: UUID): String =
+        render(serviceUnavailable, player, uuid, "", "")
+
+    private fun render(template: String, player: String, uuid: UUID, detections: String, action: String): String =
+        template
+            .replace("{player}", player)
+            .replace("{uuid}", uuid.toString())
+            .replace("{detections}", detections)
+            .replace("{action}", action)
+
+    companion object {
+        fun defaults() = MessageTemplates(
+            kick = "YGuard verification failed: {detections}",
+            ban = "This account is banned by YGuard",
+            serviceUnavailable = "YGuard verification service is temporarily unavailable",
+        )
+    }
+}
+
 data class YGuardConfig(
     val storage: StorageConfig,
     val keys: KeyConfig,
     val allowedBuildIds: Set<String>,
     val suspiciousPackages: PackageRules,
     val actions: Map<DetectionType, EnforcementAction>,
+    val messages: MessageTemplates = MessageTemplates.defaults(),
 )
 
 class ConfigException(message: String) : IllegalArgumentException(message)
@@ -52,7 +84,12 @@ object YGuardConfigLoader {
     private val keyIdPattern = Regex("[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 
     fun load(configuration: FileConfiguration, dataDirectory: Path): YGuardConfig {
-        requireKeys(configuration, "root", setOf("storage", "keys", "allowedBuildIds", "suspiciousPackages", "actions"))
+        requireKeys(
+            configuration,
+            "root",
+            setOf("storage", "keys", "allowedBuildIds", "suspiciousPackages", "actions"),
+            setOf("messages"),
+        )
         val storageSection = configuration.requiredSection("storage")
         requireKeys(storageSection, "storage", setOf("type", "sqlite", "mysql"))
         val sqliteSection = storageSection.requiredSection("sqlite")
@@ -93,6 +130,15 @@ object YGuardConfigLoader {
             prefixes = packagesSection.requiredStringList("prefixes").toStrictSet("suspiciousPackages.prefixes"),
         )
 
+        val messages = configuration.getConfigurationSection("messages")?.let { messagesSection ->
+            requireKeys(messagesSection, "messages", setOf("kick", "ban", "serviceUnavailable"))
+            MessageTemplates(
+                kick = messagesSection.requiredString("kick"),
+                ban = messagesSection.requiredString("ban"),
+                serviceUnavailable = messagesSection.requiredString("serviceUnavailable"),
+            )
+        } ?: MessageTemplates.defaults()
+
         val actionsSection = configuration.requiredSection("actions")
         val expectedDetections = DetectionType.entries.toSet()
         val actionNames = actionsSection.getKeys(false)
@@ -111,6 +157,7 @@ object YGuardConfigLoader {
             allowedBuildIds = allowedBuildIds,
             suspiciousPackages = rules,
             actions = actions,
+            messages = messages,
         )
     }
 
@@ -136,12 +183,18 @@ object YGuardConfigLoader {
             throw ConfigException("Invalid $field: $value")
         }
 
-    private fun requireKeys(section: ConfigurationSection, name: String, allowed: Set<String>) {
-        val unknown = section.getKeys(false) - allowed
+    private fun requireKeys(
+        section: ConfigurationSection,
+        name: String,
+        required: Set<String>,
+        optional: Set<String> = emptySet(),
+    ) {
+        val keys = section.getKeys(false)
+        val unknown = keys - required - optional
         if (unknown.isNotEmpty()) {
             throw ConfigException("Unknown keys in $name: $unknown")
         }
-        val missing = allowed - section.getKeys(false)
+        val missing = required - keys
         if (missing.isNotEmpty()) {
             throw ConfigException("Missing keys in $name: $missing")
         }

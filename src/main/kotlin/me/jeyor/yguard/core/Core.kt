@@ -45,8 +45,8 @@ class Core : JavaPlugin() {
                 namedThreadFactory("YGuard-Crypto"),
             )
             databaseExecutor = dbExecutor
-            cryptoExecutor = decryptExecutor
-            val detectionService = DetectionService(yguardConfig, repository)
+                cryptoExecutor = decryptExecutor
+                val detectionService = DetectionService(yguardConfig, repository)
             val floodgateCompatibility = FloodgateCompatibility(
                 isFloodgateEnabled = { server.pluginManager.isPluginEnabled("floodgate") },
                 isFloodgatePlayer = { playerUuid -> FloodgateApi.getInstance().isFloodgatePlayer(playerUuid) },
@@ -59,11 +59,12 @@ class Core : JavaPlugin() {
                 expirationHandler = { context -> coordinator.expire(context) },
                 shouldSkipVerification = floodgateCompatibility::isBedrockPlayer,
             )
-            coordinator = AttestationCoordinator(
-                plugin = this,
-                decryptor = AttestationDecryptor(keyRegistry),
-                detectionService = detectionService,
-                cryptoExecutor = decryptExecutor,
+                coordinator = AttestationCoordinator(
+                    plugin = this,
+                    decryptor = AttestationDecryptor(keyRegistry),
+                    detectionService = detectionService,
+                    messages = yguardConfig.messages,
+                    cryptoExecutor = decryptExecutor,
                 databaseExecutor = dbExecutor,
                 sessions = sessionManager,
             )
@@ -73,7 +74,7 @@ class Core : JavaPlugin() {
             server.messenger.registerOutgoingPluginChannel(this, ProtocolConstants.RESULT_CHANNEL)
             server.messenger.registerIncomingPluginChannel(this, ProtocolConstants.FRAGMENT_CHANNEL, sessionManager)
             server.pluginManager.registerEvents(sessionManager, this)
-            server.pluginManager.registerEvents(AccountBanListener(this, repository, dbExecutor), this)
+            server.pluginManager.registerEvents(AccountBanListener(this, repository, dbExecutor, yguardConfig.messages), this)
 
             val command = requireNotNull(getCommand("yguard")) { "plugin.yml is missing the yguard command" }
             val commandHandler = YGuardCommand(this, repository, dbExecutor)

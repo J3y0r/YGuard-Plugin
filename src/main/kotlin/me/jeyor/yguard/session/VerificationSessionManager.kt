@@ -80,10 +80,12 @@ class VerificationSessionManager(
         check(Bukkit.isPrimaryThread())
         remove(player.uniqueId)
         if (shouldSkipVerification(player.uniqueId)) {
+            plugin.logger.info("Skipped YGuard verification for Floodgate player ${player.name} (${player.uniqueId})")
             return
         }
         val session = Session(player, UUID.randomUUID())
         sessions[player.uniqueId] = session
+        plugin.logger.info("Started YGuard verification for ${player.name} (${player.uniqueId}); session=${session.id}")
         activate(session, 1)
         session.tasks += Bukkit.getScheduler().runTaskLater(plugin, Runnable { advance(session.id, player.uniqueId, 2) }, 100L)
         session.tasks += Bukkit.getScheduler().runTaskLater(plugin, Runnable { advance(session.id, player.uniqueId, 3) }, 200L)
@@ -194,6 +196,10 @@ class VerificationSessionManager(
                     expiresAtEpochMs = expiresAt,
                     playerUuid = session.player.uniqueId,
                 ),
+            )
+            plugin.logger.info(
+                "Sent YGuard challenge to ${session.player.name} (${session.player.uniqueId}); " +
+                    "session=${session.id}, attempt=$attemptNumber",
             )
         }
     }

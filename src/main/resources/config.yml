@@ -16,6 +16,11 @@ allowedBuildIds: []
 suspiciousPackages:
   exact: []
   prefixes: []
+# Supported placeholders: {player}, {uuid}, {detections}, {action}
+messages:
+  kick: "YGuard verification failed: {detections}"
+  ban: "This account is banned by YGuard"
+  serviceUnavailable: "YGuard verification service is temporarily unavailable"
 actions:
   HWID_BANNED: BAN_HWID_ACCOUNT
   BUILD_ID_INVALID: KICK

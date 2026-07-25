@@ -1,5 +1,6 @@
 package me.jeyor.yguard.listener
 
+import me.jeyor.yguard.config.MessageTemplates
 import me.jeyor.yguard.storage.BanSubjectType
 import me.jeyor.yguard.storage.YGuardRepository
 import net.kyori.adventure.text.Component
@@ -17,6 +18,7 @@ class AccountBanListener(
     private val plugin: Plugin,
     private val repository: YGuardRepository,
     private val databaseExecutor: Executor,
+    private val messages: MessageTemplates,
 ) : Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     fun onPreLogin(event: AsyncPlayerPreLoginEvent) {
@@ -29,16 +31,24 @@ class AccountBanListener(
                 databaseExecutor,
             ).get(10, TimeUnit.SECONDS)
             if (banned) {
+                plugin.logger.info("Denied login for ${event.name} (${event.uniqueId}); active YGuard account ban")
                 event.disallow(
                     AsyncPlayerPreLoginEvent.Result.KICK_BANNED,
-                    Component.text("This account is banned by YGuard"),
+                    Component.text(
+                        messages.renderBan(
+                            player = event.name,
+                            uuid = event.uniqueId,
+                            detections = "ACCOUNT_BANNED",
+                            action = "BAN_ACCOUNT",
+                        ),
+                    ),
                 )
             }
         } catch (exception: Exception) {
             plugin.logger.log(Level.SEVERE, "Unable to check YGuard account ban during login", exception)
             event.disallow(
                 AsyncPlayerPreLoginEvent.Result.KICK_OTHER,
-                Component.text("YGuard verification service is temporarily unavailable"),
+                Component.text(messages.renderServiceUnavailable(event.name, event.uniqueId)),
             )
         }
     }
