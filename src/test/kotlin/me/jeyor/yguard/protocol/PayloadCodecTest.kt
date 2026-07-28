@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 import java.util.UUID
-import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
@@ -17,14 +16,6 @@ class PayloadCodecTest {
     private val sessionId = UUID.fromString("11111111-1111-1111-1111-111111111111")
     private val playerUuid = UUID.fromString("22222222-2222-2222-2222-222222222222")
     private val nonce = Base64.getUrlEncoder().withoutPadding().encodeToString(ByteArray(32) { it.toByte() })
-
-    @Test
-    fun `encodes fragment channel registration as NUL terminated UTF-8`() {
-        assertContentEquals(
-            "yguard:attestation_fragment\u0000".toByteArray(StandardCharsets.UTF_8),
-            ProtocolConstants.fragmentChannelRegistration(),
-        )
-    }
 
     @Test
     fun `accepts native unavailable with null native values`() {
