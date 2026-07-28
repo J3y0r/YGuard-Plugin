@@ -86,6 +86,11 @@ class VerificationSessionManager(
         val session = Session(player, UUID.randomUUID())
         sessions[player.uniqueId] = session
         plugin.logger.info("Started YGuard verification for ${player.name} (${player.uniqueId}); session=${session.id}")
+        player.sendPluginMessage(
+            plugin,
+            ProtocolConstants.REGISTER_CHANNEL,
+            ProtocolConstants.fragmentChannelRegistration(),
+        )
         activate(session, 1)
         session.tasks += Bukkit.getScheduler().runTaskLater(plugin, Runnable { advance(session.id, player.uniqueId, 2) }, 100L)
         session.tasks += Bukkit.getScheduler().runTaskLater(plugin, Runnable { advance(session.id, player.uniqueId, 3) }, 200L)

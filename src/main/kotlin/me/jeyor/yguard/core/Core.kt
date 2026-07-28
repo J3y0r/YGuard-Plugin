@@ -70,6 +70,7 @@ class Core : JavaPlugin() {
             )
             sessions = sessionManager
 
+            server.messenger.registerOutgoingPluginChannel(this, ProtocolConstants.REGISTER_CHANNEL)
             server.messenger.registerOutgoingPluginChannel(this, ProtocolConstants.CHALLENGE_CHANNEL)
             server.messenger.registerOutgoingPluginChannel(this, ProtocolConstants.RESULT_CHANNEL)
             server.messenger.registerIncomingPluginChannel(this, ProtocolConstants.FRAGMENT_CHANNEL, sessionManager)
